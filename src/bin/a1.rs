@@ -8,9 +8,9 @@
 // * Use a function to display your last name
 // * Use the println macro to display messages to the terminal
 fn display_name() -> (&'static str, &'static str) {
-    return ("T", "Kumagai")
+    ("T", "Kumagai")
 
 }
 fn main() {
-    println!("{:?} {:?}", display_name().0, display_name().1)
+    println!("{:?}", display_name())
 }
