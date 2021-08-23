@@ -9,4 +9,15 @@
 // * Print the variable within the loop statement
 // * Use break to exit the loop
 
-fn main() {}
+fn main() {
+
+    let mut loop_count = 5;
+    loop {
+
+        if loop_count == 0 {
+            break;
+        }
+        println!("{}", loop_count);
+        loop_count = loop_count - 1;
+    }
+}
