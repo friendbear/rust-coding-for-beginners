@@ -12,10 +12,10 @@
 
 fn main() {
 
-    let mut number = 1;
+    let mut number = 5;
 
-    while number <= 5 {
+    while number >= 1 {
         println!("{:?}", number);
-        number = number + 1;
+        number = number - 1;
     }
 }
