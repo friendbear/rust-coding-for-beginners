@@ -7,8 +7,8 @@
 // * Use a function to display your first name
 // * Use a function to display your last name
 // * Use the println macro to display messages to the terminal
-fn display_name() -> (&'static str, &'static str) {
-    ("T", "Kumagai")
+fn display_name() -> (String, String) {
+    ("T".to_owned(), String::from("Kumagai"))
 
 }
 fn main() {
