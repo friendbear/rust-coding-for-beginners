@@ -10,4 +10,16 @@
 // * Determine whether to print the number or print "thirty" inside the loop
 // * Use the .len() function to print the number of elements in a vector
 
-fn main() {}
+fn main() {
+
+    let stores = vec![10, 20, 30, 40];
+
+    for store in &stores {
+        match store {
+            30 => println!("thirty"),
+            _ => println!("store: {:?}", store),
+        }
+    }
+    println!("stores: {:?}", stores.len());
+
+}
