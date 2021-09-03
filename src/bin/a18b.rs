@@ -56,6 +56,11 @@ fn try_access(employee: &Employee) -> Result<(), String> {
         _ => Err("invalid position".to_owned()),
     }
 }
+
+fn print_access(employee: &Employee) -> Result<(), String> {
+    let attempt_access = try_access(employee)?;
+    Ok(())
+}
 fn main() {
 
     let manager = Employee {
@@ -63,7 +68,7 @@ fn main() {
         status: Status::Terminated,
     };
 
-    if let Err(e) = try_access(&manager) {
+    if let Err(e) = print_access(&manager) {
         println!("Access denied: {:?}", e);
     } else {
         println!("Access allowed: {:?}", &manager);
