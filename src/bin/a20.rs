@@ -41,7 +41,7 @@ impl PowerState {
             "sleep" => Some(PowerState::Sleep),
             "reboot" => Some(PowerState::Reboot),
             "shutdown" => Some(PowerState::Shutdown),
-            "hibernate" => Some(PowerState::Off),
+            "hibernate" => Some(PowerState::Hibernate),
             _ => None,
         }
     }
