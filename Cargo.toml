@@ -1,9 +1,22 @@
 [package]
-name = "activities"
+name = "p1"
 version = "0.1.0"
-authors = [""]
+authors = ["T Kumagai"]
 edition = "2018"
+exclude = [".github/*",".vscode/*","assets/*"]
+homepage = "https://github.com/friendbear/rust-coding-for-beginners"
+repository = "https://github.com/friendbear/rust-coding-for-beginners"
+
+readme = "README.md"
+license = "MIT"
+categories = ["command-line-utilities"]
+keywords = [
+    "cli",
+    "terminal",
+    "ui",
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+
