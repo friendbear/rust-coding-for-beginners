@@ -1,0 +1,7 @@
+{
+    "editor.formatOnSave": true,
+    "workbench.settings.enableNaturalLanguageSearch": false,
+    "files.watcherExclude": {
+        "**/target": true
+    }
+}
