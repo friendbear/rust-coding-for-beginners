@@ -17,6 +17,8 @@
 //   throughout your program.
 // * Create your program starting at level 1. Once finished, advance to the
 //   next level.
+
+use std::io;
 enum Menu {
     Add,
     View,
@@ -47,7 +49,7 @@ impl Bills {
 }
 fn get_input() -> String {
     let mut buffer = String::new();
-    while std::io::stdin().read_line(&mut buffer).is_err() {
+    while io::stdin().read_line(&mut buffer).is_err() {
         println!("Please enter your data again");
     }
     buffer.trim().to_owned()
@@ -81,12 +83,12 @@ fn view_bill_menu(bills: &Bills) {
 }
 fn main_menu() {
     fn show() {
-        println!("");
-        println!("== Manage Bills ==");
-        println!("1. Add bill");
-        println!("2. View bills");
-        println!("");
-        println!("Enter selection:");
+        println!(r"{:ident$}== Manage Bills ==
+            i. Add bill
+            2. View bills
+            
+            Enter selection:
+        ", " ", ident=4);
     }
 
     let mut bills = Bills::new();
