@@ -28,7 +28,7 @@ enum Menu {
     Back,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone)] // 💚
 struct Bill {
     name: String,
     amount: f64,
@@ -47,12 +47,21 @@ impl Bills {
     fn get_all(&self) -> Vec<Bill> {
         let mut bills = vec![];
         for bill in self.inner.values() {
-            bills.push(bill.clone());
+            bills.push(bill.clone());   // 💚
         }
         bills
     }
     fn remove(&mut self, name: &str) -> bool {
         self.inner.remove(name).is_some()
+    }
+    fn update(&mut self, name: &str, amount: f64) -> bool {
+        match self.inner.get_mut(name) { // 💚 
+            Some(bill) => {
+                bill.amount = amount;
+                true
+            }
+            None => false
+        }
     }
 }
 fn get_input() -> String {
@@ -99,14 +108,33 @@ fn remove_bill_menu(bills: &mut Bills) {
     } else {
         println!("Bill not removed name: {:?}", name);
     }
-
 }
+
+fn update_bill_menu(bills: &mut Bills) {
+    for bill in bills.get_all() {
+        println!("{:?}", bill);
+    }
+    println!("Enter bill name to update:");
+    let name = get_input();
+
+    println!("Enter bill ammount:");
+
+    let amount = get_bill_amount();
+    if bills.update(&name, amount) {
+        println!("Update sccess.")
+    } else {
+        println!("Update failured.")
+    }
+}
+
+
 fn main_menu() {
     fn show() {
         println!(r"{:ident$}== Manage Bills ==
             i. Add bill
             2. View bills
             3. Remove bill
+            4. Update bill
             
             Enter selection:
         ", " ", ident=4);
@@ -121,6 +149,7 @@ fn main_menu() {
             "1" => add_bill_menu(&mut bills),
             "2" => view_bill_menu(&bills),
             "3" => remove_bill_menu(&mut bills),
+            "4" => update_bill_menu(&mut bills),
             _ => break,
         }
     }
