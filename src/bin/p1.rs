@@ -19,6 +19,7 @@
 //   next level.
 
 use std::io;
+use std::collections::HashMap;
 enum Menu {
     Add,
     View,
@@ -27,24 +28,31 @@ enum Menu {
     Back,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Bill {
     name: String,
     amount: f64,
 }
 struct Bills {
-    inner: Vec<Bill>,
+    inner: HashMap<String, Bill>,
 }
 
 impl Bills {
     fn new() -> Self {
-        Self { inner: vec![] }
+        Self { inner: HashMap::new() }
     }
     fn add(&mut self, bill: Bill) {
-        self.inner.push(bill);
+        self.inner.insert(bill.name.clone(), bill);
     }
-    fn get_all(&self) -> &Vec<Bill> {
-        &self.inner
+    fn get_all(&self) -> Vec<Bill> {
+        let mut bills = vec![];
+        for bill in self.inner.values() {
+            bills.push(bill.clone());
+        }
+        bills
+    }
+    fn remove(&mut self, name: &str) -> bool {
+        self.inner.remove(name).is_some()
     }
 }
 fn get_input() -> String {
@@ -81,11 +89,24 @@ fn view_bill_menu(bills: &Bills) {
         println!("{:?}", bill);
     }
 }
+
+fn remove_bill_menu(bills: &mut Bills) {
+    println!("Enter bill name to remove:");
+    let name = get_input();
+
+    if bills.remove(&name) {
+        println!("Bill removed");
+    } else {
+        println!("Bill not removed name: {:?}", name);
+    }
+
+}
 fn main_menu() {
     fn show() {
         println!(r"{:ident$}== Manage Bills ==
             i. Add bill
             2. View bills
+            3. Remove bill
             
             Enter selection:
         ", " ", ident=4);
@@ -99,6 +120,7 @@ fn main_menu() {
         match input.as_str() {
             "1" => add_bill_menu(&mut bills),
             "2" => view_bill_menu(&bills),
+            "3" => remove_bill_menu(&mut bills),
             _ => break,
         }
     }
