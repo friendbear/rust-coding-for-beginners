@@ -40,7 +40,7 @@ fn main() {
     dbg!(new_numbers);
 
     let numbers = vec![1, 2, 3, 4, 5]; // 🔨
-    let find_me: Option<i32> = numbers.iter().find(|&&x| x == 3);
+    let find_me: Option<&i32> = numbers.iter().find(|&&x| x == 3);
     dbg!(find_me);
 
     let count = numbers.iter().count();
