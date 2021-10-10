@@ -13,7 +13,7 @@ fn main() {
         let a_mapped = a.map(|num| num + 1);
         dbg!(a_mapped);
 
-        let a_filtered = a.filter(|predicate| predicate == &1);
+        let a_filtered = a.filter(|predicate| *predicate == 1);
         dbg!(a_filtered);
 
         let a_or_else = a.or_else(|| Some(5));
@@ -54,7 +54,7 @@ mod test {
 
         assert_eq!(a.map(|num| num + 1), Some(2));
 
-        assert_eq!(a.filter(|num| num == &1), Some(1));
+        assert_eq!(a.filter(|num| *num == 1), Some(1));
 
         assert_eq!(a.or_else(|| Some(5)), Some(1));
 
