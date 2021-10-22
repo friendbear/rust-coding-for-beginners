@@ -20,3 +20,5 @@ keywords = [
 
 [dependencies]
 chrono = "0.4.19"
+# https://docs.rs/thiserror/1.0.30/thiserror/
+thiserror = "1.0.30"
