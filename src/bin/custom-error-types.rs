@@ -1,5 +1,3 @@
-use std::fmt::Result;
-
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -16,11 +14,11 @@ enum LoginError {
     WrongPassword,
 }
 
-fn login(user: &str, password: &str) -> Result<(), LoginError> {
+fn login(user: &str, password: &str) -> Result<String, LoginError> {
     if true {
-        Err(LoginError::NetworkError)
+        Err(LoginError::PasswordExpired)
     } else {
-        Ok("session id");
+        Ok("session id".to_string())
     }
     // let user_id = get_user_id(user)?;
     // if try_password(user_id, password)? {
