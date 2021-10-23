@@ -9,6 +9,12 @@ use std::ptr::eq;
 // Notes:
 // * Run `cargo test --bin a23` to check your program.
 // * Only edit the part_1, part_2, and part_3 functions.
+#[derive(Debug, Eq, PartialEq)]
+enum Access {
+    Admin,
+    User,
+    Guest,
+}
 
 fn part_1() -> bool {
     // We are checking whether or not this particular user
@@ -22,26 +28,14 @@ fn part_2() -> Option<Access> {
     // "Root" is equivalent to Access::Admin, but it is
     // not listed in the maybe_access function.
     // Note: Use or_else and root().
-    maybe_access("root").or_else(|| root())
+
+    maybe_access("root").or_else(|| Some(Access::Admin))
 }
 
 fn part_3() -> Access {
     // "Alice" is not a listed user, so she will be a guest.
     // Note: Use unwrap_or_else.
     maybe_access("Alice").unwrap_or_else(|| Access::Guest)
-}
-//#![feature(arbitrary_enum_discriminant)] ❌
-//#[repr(u8)]
-// enum Access {
-//     Admin(i32) = 0, ❌
-//     User(i32) = 1,
-//     Guest(i32) = 2,
-// }
-#[derive(Debug, Eq, PartialEq)]
-enum Access {
-    Admin,
-    User,
-    Guest,
 }
 
 fn maybe_access(name: &str) -> Option<Access> {
