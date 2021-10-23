@@ -13,10 +13,14 @@ categories = ["command-line-utilities"]
 keywords = [
     "cli",
     "terminal",
-    "ui",
+    "ui"
 ]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "demo"
+path = "src/lib.rs"
 
 [dependencies]
 chrono = "0.4.19"

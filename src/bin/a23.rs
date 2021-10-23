@@ -1,3 +1,5 @@
+use std::ptr::eq;
+
 // Topic: Option combinators
 //
 // Requirements:
@@ -26,6 +28,7 @@ fn part_2() -> Option<Access> {
     // "Root" is equivalent to Access::Admin, but it is
     // not listed in the maybe_access function.
     // Note: Use or_else and root().
+
     maybe_access("root").or_else(|| Some(Access::Admin))
 }
 
