@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 // Project 2: Contact manager
 //
 // User stories:
@@ -24,5 +26,38 @@
 //   to the next level.
 // * Make your program robust: there are 7 errors & multiple blank lines
 //   present in the data.
+use thiserror::Error;
 
+#[derive(Debug)]
+struct Record {
+    id: i64,
+    name: String,
+    email: Option<String>,
+}
+
+#[derive(Debug)]
+struct Records {
+    inner: HashMap<i64, Record>,
+}
+
+impl Records {
+    fn new() -> Self {
+        Self {
+            inner: HashMap::new(),
+        }
+    }
+    fn add(&mut self, record: Record) {
+        self.inner.insert(record.id, record);
+    }
+}
+
+#[derive(Error, Debug)]
+enum ParseError {
+    #[error("Id must be a number: {0}")]
+    InvalidId(#[from] std::num::ParseIntError),
+    #[error("empty record")]
+    EmptyRecord,
+    #[error("mission field: {0}")]
+    MissingField(String),
+}
 fn main() {}

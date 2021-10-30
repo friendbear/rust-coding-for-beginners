@@ -1,0 +1,5 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory `/Users/k22/Develop/Rust/rust-coding-for-beginners'
+cargo run  -q --bin p1
+make: Leaving directory `/Users/k22/Develop/Rust/rust-coding-for-beginners'
+ 
