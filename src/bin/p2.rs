@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 // Project 2: Contact manager
 //
 // User stories:
@@ -26,38 +24,89 @@ use std::collections::HashMap;
 //   to the next level.
 // * Make your program robust: there are 7 errors & multiple blank lines
 //   present in the data.
-use thiserror::Error;
 
-#[derive(Debug)]
-struct Record {
-    id: i64,
-    name: String,
-    email: Option<String>,
-}
+mod p2 {
+    use std::collections::HashMap;
+    use std::fs::File;
+    use std::i64;
+    use std::io::Read;
+    use std::path::PathBuf;
+    use thiserror::Error;
 
-#[derive(Debug)]
-struct Records {
-    inner: HashMap<i64, Record>,
-}
+    /// Contact of Record
+    #[derive(Debug)]
+    struct Record {
+        id: i64,
+        name: String,
+        email: Option<String>,
+    }
 
-impl Records {
-    fn new() -> Self {
-        Self {
-            inner: HashMap::new(),
+    /// Contains all saved records.
+    #[derive(Debug)]
+    struct Records {
+        inner: HashMap<i64, Record>,
+    }
+
+    impl Records {
+        fn new() -> Self {
+            Self {
+                inner: HashMap::new(),
+            }
+        }
+        fn add(&mut self, record: Record) {
+            self.inner.insert(record.id, record);
         }
     }
-    fn add(&mut self, record: Record) {
-        self.inner.insert(record.id, record);
-    }
-}
 
-#[derive(Error, Debug)]
-enum ParseError {
-    #[error("Id must be a number: {0}")]
-    InvalidId(#[from] std::num::ParseIntError),
-    #[error("empty record")]
-    EmptyRecord,
-    #[error("mission field: {0}")]
-    MissingField(String),
+    #[derive(Error, Debug)]
+    enum ParseError {
+        #[error("Id must be a number: {0}")]
+        InvalidId(#[from] std::num::ParseIntError),
+        #[error("empty record")]
+        EmptyRecord,
+        #[error("mission field: {0}")]
+        MissingField(String),
+    }
+
+    fn parse_record(line: &str) -> Result<Record, ParseError> {
+        let fields: Vec<&str> = line.split(',').collect();
+        let id = match fields.get(0) {
+            Some(id) => i64::from_str_radix(id, 10)?,
+            None => return Err(ParseError::EmptyRecord),
+        };
+        let name = match fields.get(1).filter(|name| !name.is_empty()) {
+            Some(name) => name.to_string(),
+            None => return Err(ParseError::MissingField("name".to_owned())),
+        };
+        let email = fields
+            .get(2)
+            .map(|email| email.to_string())
+            .filter(|email| !email.is_empty());
+
+        Ok(Record { id, name, email })
+    }
+    fn parse_recoads(records: String, verbose: bool) -> Records {
+        let mut recs = Records::new();
+        for (num, record) in records.split('\n').enumerate() {
+            if record != "" {
+                match parse_record(record) {
+                    Ok(rec) => recs.add(rec),
+                    Err(e) => {
+                        if verbose {
+                            println!("error on line number {}: {} > \"{}\"\n", num + 1, e, record)
+                        }
+                    }
+                }
+            }
+        }
+        recs
+    }
+    fn load_records(file_name: PathBuf, verbose: bool) -> std::io::Result<Records> {
+        let mut file = File::open(file_name)?;
+        let mut buffer = String::new();
+        file.read_to_string(&mut buffer)?;
+
+        Ok(parse_recoads(buffer, verbose))
+    }
 }
 fn main() {}
