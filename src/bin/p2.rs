@@ -3,8 +3,8 @@
 // User stories:
 // * L1: I want to view my saved contacts.
 // * L2: I want to add new contacts.
-// * L2: I want to search for contacts.
-// * L3: I want to edit and remove existing contacts.
+// * L3: I want to search for contacts.
+// * L4: I want to edit and remove existing contacts.
 //
 // Tips:
 // * Make a backup of the existing `p2_data.csv` file.
@@ -13,48 +13,87 @@
 //   The fields are separated by commas. If a field is not provided,
 //   then there is no data for that particular field. There will
 //   always be a comma for the field even if no data is present.
-// * The `id` and `name` fields are required, the `email` field is optional.
-// * Check the documentation on the `std::fs::File` struct for reading
+// * the `id` and `name` fields are required, the `email` field is optional.
+// * check the documentation on the `std::fs::file` struct for reading
 //   and writing files.
-// * Use the `split` function from the standard library to extract
+// * use the `split` function from the standard library to extract
 //   specific fields.
-// * Try the `structopt` crate if you want to make a non-interactive
+// * try the `structopt` crate if you want to make a non-interactive
 //   command line application.
-// * Create your program starting at level 1. Once finished, advance
+// * create your program starting at level 1. once finished, advance
 //   to the next level.
-// * Make your program robust: there are 7 errors & multiple blank lines
+// * make your program robust: there are 7 errors & multiple blank lines
 //   present in the data.
 
-mod p2 {
+pub mod p2 {
     use std::collections::HashMap;
-    use std::fs::File;
+    use std::fs::{File, OpenOptions};
     use std::i64;
-    use std::io::Read;
+    use std::io::{Read, Write};
     use std::path::PathBuf;
     use thiserror::Error;
 
     /// Contact of Record
     #[derive(Debug)]
-    struct Record {
-        id: i64,
-        name: String,
-        email: Option<String>,
+    pub struct Record {
+        pub id: i64,
+        pub name: String,
+        pub email: Option<String>,
     }
 
     /// Contains all saved records.
     #[derive(Debug)]
-    struct Records {
+    pub struct Records {
         inner: HashMap<i64, Record>,
     }
 
     impl Records {
-        fn new() -> Self {
+        pub fn new() -> Self {
             Self {
                 inner: HashMap::new(),
             }
         }
-        fn add(&mut self, record: Record) {
+
+        pub fn add(&mut self, record: Record) {
             self.inner.insert(record.id, record);
+        }
+
+        /// return records sort by key
+        pub fn into_vec(mut self) -> Vec<Record> {
+            let mut records: Vec<_> = self.inner.drain().map(|kv| kv.1).collect();
+            records.sort_by_key(|rec| rec.id);
+            records
+        }
+
+        pub fn next_id(&self) -> i64 {
+            let mut ids: Vec<_> = self.inner.keys().collect();
+            ids.sort();
+            match ids.pop() {
+                Some(id) => id + 1,
+                None => 1,
+            }
+        }
+
+        pub fn search(&self, name: &str) -> Vec<&Record> {
+            self.inner
+                .values()
+                .filter(|rec| rec.name.to_lowercase().contains(&name.to_lowercase()))
+                .collect()
+        }
+
+        pub fn remove(&mut self, id: i64) -> Option<Record> {
+            self.inner.remove(&id)
+        }
+
+        pub fn edit(&mut self, id: i64, name: &str, email: Option<String>) {
+            self.inner.insert(
+                id,
+                Record {
+                    id,
+                    name: name.to_string(),
+                    email,
+                },
+            );
         }
     }
 
@@ -101,12 +140,128 @@ mod p2 {
         }
         recs
     }
-    fn load_records(file_name: PathBuf, verbose: bool) -> std::io::Result<Records> {
+    pub fn load_records(file_name: PathBuf, verbose: bool) -> std::io::Result<Records> {
         let mut file = File::open(file_name)?;
         let mut buffer = String::new();
         file.read_to_string(&mut buffer)?;
 
         Ok(parse_recoads(buffer, verbose))
     }
+
+    pub fn save_records(file_name: PathBuf, records: Records) -> std::io::Result<()> {
+        let mut file = OpenOptions::new()
+            .write(true)
+            .truncate(true)
+            .open(file_name)?;
+        file.write(b"id,name,email\n")?;
+        for record in records.into_vec().into_iter() {
+            // Optional field email
+            let email = match record.email {
+                Some(email) => email,
+                None => "".to_string(),
+            };
+            let line = format!("{},{},{}\n", record.id, record.name, email);
+            file.write(line.as_bytes())?;
+        }
+        file.flush()?; // ⚡
+        Ok(())
+    }
 }
-fn main() {}
+
+use p2::{load_records, save_records, Record};
+use std::path::PathBuf;
+use structopt::StructOpt;
+
+#[derive(StructOpt, Debug)]
+#[structopt(about = "project2: contact manager")]
+struct Opt {
+    #[structopt(short, parse(from_os_str), default_value = "p2_data.csv")]
+    data_file: PathBuf,
+    #[structopt(subcommand)]
+    cmd: Command,
+    #[structopt(short, help = "verbose")]
+    verbose: bool,
+}
+#[derive(StructOpt, Debug)]
+enum Command {
+    Add {
+        name: String,
+        #[structopt(short)]
+        email: Option<String>,
+    },
+    List {},
+    Search {
+        query: String,
+    },
+    Remove {
+        id: i64,
+    },
+    Edit {
+        id: i64,
+        name: String,
+        #[structopt(short)]
+        email: Option<String>,
+    },
+}
+
+fn run(opt: Opt) -> Result<(), std::io::Error> {
+    match opt.cmd {
+        // L2: I want to add new contacts.
+        Command::Add { name, email } => {
+            let mut recs = load_records(opt.data_file.clone(), opt.verbose)?;
+            let next_id = recs.next_id();
+            recs.add(Record {
+                id: next_id,
+                name,
+                email,
+            });
+            save_records(opt.data_file, recs)?;
+        }
+
+        // L1: I want to view my saved contacts.
+        Command::List { .. } => {
+            let recs = load_records(opt.data_file, opt.verbose)?;
+            for record in recs.into_vec() {
+                println!("{:?}", record);
+            }
+        }
+
+        // L3: I want to search for a contact.
+        Command::Search { query } => {
+            let recs = load_records(opt.data_file, opt.verbose)?;
+            let results = recs.search(&query);
+            if results.is_empty() {
+                println!("No results found.");
+            } else {
+                for record in results {
+                    println!("{:?}", record);
+                }
+            }
+        }
+        // L4: I want to remove existing contacts.
+        Command::Remove { id } => {
+            let mut recs = load_records(opt.data_file.clone(), opt.verbose)?;
+            if recs.remove(id).is_some() {
+                println!("No record found with id {}", id);
+            } else {
+                save_records(opt.data_file, recs)?;
+                println!("Record removed.");
+            }
+        }
+
+        // L4: I want to edit existing contacts.
+        Command::Edit { id, name, email } => {
+            let mut recs = load_records(opt.data_file.clone(), opt.verbose)?;
+            recs.edit(id, &name, email);
+            save_records(opt.data_file, recs)?;
+        }
+    }
+    Ok(())
+}
+
+fn main() {
+    let opt = Opt::from_args();
+    if let Err(e) = run(opt) {
+        println!("an error occured: {},", e);
+    }
+}
