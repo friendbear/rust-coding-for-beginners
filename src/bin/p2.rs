@@ -25,7 +25,7 @@
 // * Make your program robust: there are 7 errors & multiple blank lines
 //   present in the data.
 
-mod p2 {
+pub mod p2 {
     use std::collections::HashMap;
     use std::fs::File;
     use std::i64;
@@ -35,7 +35,7 @@ mod p2 {
 
     /// Contact of Record
     #[derive(Debug)]
-    struct Record {
+    pub struct Record {
         id: i64,
         name: String,
         email: Option<String>,
@@ -43,18 +43,25 @@ mod p2 {
 
     /// Contains all saved records.
     #[derive(Debug)]
-    struct Records {
+    pub struct Records {
         inner: HashMap<i64, Record>,
     }
 
     impl Records {
-        fn new() -> Self {
+        pub fn new() -> Self {
             Self {
                 inner: HashMap::new(),
             }
         }
-        fn add(&mut self, record: Record) {
+        pub fn add(&mut self, record: Record) {
             self.inner.insert(record.id, record);
+        }
+
+        /// return records sort by key
+        pub fn into_vec(mut self) -> Vec<Record> {
+            let mut records: Vec<_> = self.inner.drain().map(|kv| kv.1).collect();
+            records.sort_by_key(|rec| rec.id);
+            records
         }
     }
 
@@ -101,7 +108,7 @@ mod p2 {
         }
         recs
     }
-    fn load_records(file_name: PathBuf, verbose: bool) -> std::io::Result<Records> {
+    pub fn load_records(file_name: PathBuf, verbose: bool) -> std::io::Result<Records> {
         let mut file = File::open(file_name)?;
         let mut buffer = String::new();
         file.read_to_string(&mut buffer)?;
@@ -109,4 +116,41 @@ mod p2 {
         Ok(parse_recoads(buffer, verbose))
     }
 }
-fn main() {}
+
+use p2::load_records;
+use std::path::PathBuf;
+use structopt::StructOpt;
+
+#[derive(StructOpt, Debug)]
+#[structopt(about = "project2: contact manager")]
+struct Opt {
+    #[structopt(short, parse(from_os_str), default_value = "p2_data.csv")]
+    data_file: PathBuf,
+    #[structopt(subcommand)]
+    cmd: Command,
+    #[structopt(short, help = "verbose")]
+    verbose: bool,
+}
+#[derive(StructOpt, Debug)]
+enum Command {
+    List {},
+}
+
+fn run(opt: Opt) -> Result<(), std::io::Error> {
+    match opt.cmd {
+        Command::List { .. } => {
+            let recs = load_records(opt.data_file, opt.verbose)?;
+            for record in recs.into_vec() {
+                println!("{:?}", record);
+            }
+        }
+    }
+    Ok(())
+}
+
+fn main() {
+    let opt = Opt::from_args();
+    if let Err(e) = run(opt) {
+        println!("an error occured: {},", e);
+    }
+}
