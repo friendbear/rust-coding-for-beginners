@@ -3,8 +3,8 @@
 // User stories:
 // * L1: I want to view my saved contacts.
 // * L2: I want to add new contacts.
-// * L2: I want to search for contacts.
-// * L3: I want to edit and remove existing contacts.
+// * L3: I want to search for contacts.
+// * L4: I want to edit and remove existing contacts.
 //
 // Tips:
 // * Make a backup of the existing `p2_data.csv` file.
@@ -53,6 +53,7 @@ pub mod p2 {
                 inner: HashMap::new(),
             }
         }
+
         pub fn add(&mut self, record: Record) {
             self.inner.insert(record.id, record);
         }
@@ -78,6 +79,21 @@ pub mod p2 {
                 .values()
                 .filter(|rec| rec.name.to_lowercase().contains(&name.to_lowercase()))
                 .collect()
+        }
+
+        pub fn remove(&mut self, id: i64) -> Option<Record> {
+            self.inner.remove(&id)
+        }
+
+        pub fn edit(&mut self, id: i64, name: &str, email: Option<String>) {
+            self.inner.insert(
+                id,
+                Record {
+                    id,
+                    name: name.to_string(),
+                    email,
+                },
+            );
         }
     }
 
@@ -177,6 +193,15 @@ enum Command {
     Search {
         query: String,
     },
+    Remove {
+        id: i64,
+    },
+    Edit {
+        id: i64,
+        name: String,
+        #[structopt(short)]
+        email: Option<String>,
+    },
 }
 
 fn run(opt: Opt) -> Result<(), std::io::Error> {
@@ -212,6 +237,23 @@ fn run(opt: Opt) -> Result<(), std::io::Error> {
                     println!("{:?}", record);
                 }
             }
+        }
+        // L4: I want to remove existing contacts.
+        Command::Remove { id } => {
+            let mut recs = load_records(opt.data_file.clone(), opt.verbose)?;
+            if recs.remove(id).is_some() {
+                println!("No record found with id {}", id);
+            } else {
+                save_records(opt.data_file, recs)?;
+                println!("Record removed.");
+            }
+        }
+
+        // L4: I want to edit existing contacts.
+        Command::Edit { id, name, email } => {
+            let mut recs = load_records(opt.data_file.clone(), opt.verbose)?;
+            recs.edit(id, &name, email);
+            save_records(opt.data_file, recs)?;
         }
     }
     Ok(())
