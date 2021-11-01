@@ -13,32 +13,32 @@
 //   The fields are separated by commas. If a field is not provided,
 //   then there is no data for that particular field. There will
 //   always be a comma for the field even if no data is present.
-// * The `id` and `name` fields are required, the `email` field is optional.
-// * Check the documentation on the `std::fs::File` struct for reading
+// * the `id` and `name` fields are required, the `email` field is optional.
+// * check the documentation on the `std::fs::file` struct for reading
 //   and writing files.
-// * Use the `split` function from the standard library to extract
+// * use the `split` function from the standard library to extract
 //   specific fields.
-// * Try the `structopt` crate if you want to make a non-interactive
+// * try the `structopt` crate if you want to make a non-interactive
 //   command line application.
-// * Create your program starting at level 1. Once finished, advance
+// * create your program starting at level 1. once finished, advance
 //   to the next level.
-// * Make your program robust: there are 7 errors & multiple blank lines
+// * make your program robust: there are 7 errors & multiple blank lines
 //   present in the data.
 
 pub mod p2 {
     use std::collections::HashMap;
-    use std::fs::File;
+    use std::fs::{File, OpenOptions};
     use std::i64;
-    use std::io::Read;
+    use std::io::{Read, Write};
     use std::path::PathBuf;
     use thiserror::Error;
 
     /// Contact of Record
     #[derive(Debug)]
     pub struct Record {
-        id: i64,
-        name: String,
-        email: Option<String>,
+        pub id: i64,
+        pub name: String,
+        pub email: Option<String>,
     }
 
     /// Contains all saved records.
@@ -62,6 +62,15 @@ pub mod p2 {
             let mut records: Vec<_> = self.inner.drain().map(|kv| kv.1).collect();
             records.sort_by_key(|rec| rec.id);
             records
+        }
+
+        pub fn next_id(&self) -> i64 {
+            let mut ids: Vec<_> = self.inner.keys().collect();
+            ids.sort();
+            match ids.pop() {
+                Some(id) => id + 1,
+                None => 1,
+            }
         }
     }
 
@@ -115,9 +124,28 @@ pub mod p2 {
 
         Ok(parse_recoads(buffer, verbose))
     }
+
+    pub fn save_records(file_name: PathBuf, records: Records) -> std::io::Result<()> {
+        let mut file = OpenOptions::new()
+            .write(true)
+            .truncate(true)
+            .open(file_name)?;
+        file.write(b"id,name,email\n")?;
+        for record in records.into_vec().into_iter() {
+            // Optional field email
+            let email = match record.email {
+                Some(email) => email,
+                None => "".to_string(),
+            };
+            let line = format!("{},{},{}\n", record.id, record.name, email);
+            file.write(line.as_bytes())?;
+        }
+        file.flush()?; // ⚡
+        Ok(())
+    }
 }
 
-use p2::load_records;
+use p2::{load_records, save_records, Record};
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -133,11 +161,29 @@ struct Opt {
 }
 #[derive(StructOpt, Debug)]
 enum Command {
+    Add {
+        name: String,
+        #[structopt(short)]
+        email: Option<String>,
+    },
     List {},
 }
 
 fn run(opt: Opt) -> Result<(), std::io::Error> {
     match opt.cmd {
+        // L2: I want to add new contacts.
+        Command::Add { name, email } => {
+            let mut recs = load_records(opt.data_file.clone(), opt.verbose)?;
+            let next_id = recs.next_id();
+            recs.add(Record {
+                id: next_id,
+                name,
+                email,
+            });
+            save_records(opt.data_file, recs)?;
+        }
+
+        // L1: I want to view my saved contacts.
         Command::List { .. } => {
             let recs = load_records(opt.data_file, opt.verbose)?;
             for record in recs.into_vec() {
