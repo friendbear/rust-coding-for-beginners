@@ -1,5 +1,7 @@
 # udemy-rust-begginer
 
+[![wakatime](https://wakatime.com/badge/user/c9dffbdd-c073-4c7d-a529-e105c09c8423/project/45d53f7f-bb46-4cd8-8c2d-98c70a508551.svg)](https://wakatime.com/badge/user/c9dffbdd-c073-4c7d-a529-e105c09c8423/project/45d53f7f-bb46-4cd8-8c2d-98c70a508551)
+
 ## 目的
 O'REILLY の プログラミング Rustを読み込む前にRustの特徴をUdemyのコースで受講して基礎力をアップさせる。
 
