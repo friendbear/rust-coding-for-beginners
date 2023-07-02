@@ -12,13 +12,12 @@ fn coordinate() -> (i32, i32) {
     (1, 7)
 }
 fn main() {
-
-    let (x, y) = coordinate();
+    let (_x, y) = coordinate();
 
     if y > 5 {
         print!(">5");
     } else if y < 5 {
-            print!("<5")
+        print!("<5")
     } else {
         print!("=5")
     }
